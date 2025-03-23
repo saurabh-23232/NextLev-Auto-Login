@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NextLev Auto Login Manager</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      width: 320px;
+      background-color: #f7f9fc; /* Light background */
+      color: #333; /* Darker text for readability */
+    }
+    h3 {
+      color: #7C5695; /* Primary color for headings */
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-decoration: underline;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555; /* Slightly darker label text */
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd; /* Lighter border */
+      border-radius: 5px;
+      box-sizing: border-box; /* Prevent padding from affecting width */
+      font-size: 14px;
+    }
+    input:focus, select:focus {
+      border-color: #5bc0de; /* Highlight on focus */
+      outline: none;
+      box-shadow: 0 0 5px rgba(91, 192, 222, 0.5); /* Subtle shadow */
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff; /* Primary button color */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease; /* Smooth transition for color and shadow */
+      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3); /* Add subtle shadow for depth */
+    }
+    button:hover {
+      background-color: #0056b3; /* Darker shade on hover */
+      transform: translateY(-3px); /* Button lifts slightly when hovered */
+      box-shadow: 0 6px 12px rgba(0, 123, 255, 0.5); /* More prominent shadow on hover */
+    }
+    button:active {
+      transform: translateY(1px); /* Button presses down when clicked */
+      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3); /* Revert shadow when clicked */
+    }
+    button:focus {
+      outline: none; /* Remove default outline */
+      box-shadow: 0 0 8px rgba(91, 192, 222, 0.8); /* Glow effect on focus */
+    }
+    #delete-website {
+      background-color: #dc3545; /* Red for delete button */
+      transition: all 0.3s ease; /* Smooth transition for delete button */
+    }
+    #delete-website:hover {
+      background-color: #c82333; /* Darker red on hover */
+      transform: translateY(-3px); /* Slight lift effect */
+      box-shadow: 0 6px 12px rgba(220, 53, 69, 0.5); /* Subtle shadow for delete button */
+    }
+    #delete-website:active {
+      transform: translateY(1px); /* Button presses down when clicked */
+      box-shadow: 0 4px 6px rgba(220, 53, 69, 0.3); /* Revert shadow when clicked */
+    }
+    h4 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      color: purple;
+    }
+    #status {
+      display: none;
+      margin-top: 10px;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 14px;
+      animation: fadeInOut 3s ease-out; /* Smooth fade in/out animation */
+    }
+    .success {
+      background-color: #28a745; /* Green for success */
+      color: white;
+    }
+    .error {
+      background-color: #dc3545; /* Red for error */
+      color: white;
+    }
+    /* Improved Select Styling */
+    select {
+      appearance: none; /* Remove default arrow */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E"); /* Custom arrow */
+      background-repeat: no-repeat;
+      background-position: right 10px top 50%;
+      background-size: 12px;
+      padding-right: 30px; /* Make space for the arrow */
+    }
+    
+    /* Animation for fading in and out */
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      50% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="./assets/nextlev logo.png" alt="Auto Login Logo" style="width: 300px; height: auto; border-radius: 10px;" />
+  </div>
+
+  <!-- <h3>NextLev Auto Login Manager</h3> -->
+  <form id="credentials-form">
+    <label for="website">Website URL</label>
+    <input type="text" id="website" placeholder="https://www.example.com" required />
+
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" placeholder="Enter your email" />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Enter your password" required />
+
+    <button type="submit">Save Credentials</button>
+  </form>
+
+  <h4>Saved Websites</h4>
+  <select id="website-list"></select>
+  <button id="delete-website">Delete Selected Website</button>
+
+  <p id="status" class="success">Credential saved successfully!</p>
+  <p id="status" class="error">Website deleted successfully!</p>
+
+  <script src="popup.js"></script>
+  <script>
+    // Example to show the success message on save and delete operations
+    const saveButton = document.querySelector("button[type='submit']");
+    const deleteButton = document.getElementById('delete-website');
+    const statusMessage = document.getElementById('status');
+
+    saveButton.addEventListener('click', function (e) {
+      e.preventDefault(); // Prevent form submission
+      statusMessage.textContent = "Credential saved successfully!";
+      statusMessage.classList.remove('error');
+      statusMessage.classList.add('success');
+      statusMessage.style.display = 'block';
+      setTimeout(() => {
+        statusMessage.style.display = 'none';
+      }, 3000); // Hide after 3 seconds
+    });
+
+    deleteButton.addEventListener('click', function () {
+      statusMessage.textContent = "Website deleted successfully!";
+      statusMessage.classList.remove('success');
+      statusMessage.classList.add('error');
+      statusMessage.style.display = 'block';
+      setTimeout(() => {
+        statusMessage.style.display = 'none';
+      }, 3000); // Hide after 3 seconds
+    });
+  </script>
+</body>
+</html>
+
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Login Extension</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      width: 320px;
+      background-color: #f7f9fc; /* Light background */
+      color: #333; /* Darker text for readability */
+    }
+    h3 {
+      color: #1B1340; /* Primary color for headings */
+      margin-bottom: 15px;
+      text-align: center;
+      font size:20px;
+      font family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-decoration: underline;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555; /* Slightly darker label text */
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd; /* Lighter border */
+      border-radius: 5px;
+      box-sizing: border-box; /* Prevent padding from affecting width */
+      font-size: 14px;
+    }
+    input:focus, select:focus {
+      border-color: #5bc0de; /* Highlight on focus */
+      outline: none;
+      box-shadow: 0 0 5px rgba(91, 192, 222, 0.5); /* Subtle shadow */
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff; /* Primary button color */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease; /* Smooth transition */
+    }
+    button:hover {
+      background-color: #0056b3; /* Darker shade on hover */
+    }
+    #delete-website {
+      background-color: #dc3545; /* Red for delete button */
+    }
+    #delete-website:hover {
+      background-color: #c82333; /* Darker red on hover */
+    }
+    h4 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      color: #28a745;
+    }
+    #status {
+      color: #28a745;
+      display: none;
+      margin-top: 10px;
+      text-align: center;
+    }
+    /* Improved Select Styling */
+    select {
+      appearance: none; /* Remove default arrow */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E"); /* Custom arrow */
+      background-repeat: no-repeat;
+      background-position: right 10px top 50%;
+      background-size: 12px;
+      padding-right: 30px; /* Make space for the arrow */
+    }
+  </style>
+</head>
+<body>
+  <h3>NextLev Auto Login Manager</h3>
+  <form id="credentials-form">
+    <label for="website">Website URL</label>
+    <input type="text" id="website" placeholder="https://www.example.com" required />
+
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" placeholder="Enter your email" />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Enter your password" required />
+
+    <button type="submit">Save Credentials</button>
+  </form>
+
+  <h4>Saved Websites</h4>
+  <select id="website-list"></select>
+  <button id="delete-website">Delete Selected Website</button>
+
+  <p id="status">Operation successful!</p>
+
+  <script src="popup.js"></script>
+</body>
+</html> -->
